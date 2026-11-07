@@ -1,34 +1,13 @@
 (function(){
-  // King Jesus Clothing products: edit this block only.
-  // Set each product's name, store path, optional price and image, and short description.
-  var KJC={store:'https://kingjesusclothing.org',aff:''};
-  var featured={name:'Featured collab piece',path:'/shop/',price:'',img:'',blurb:'Our flagship piece from the Leading Lights collaboration. Add a short description here.'};
-  var items=[
-    {name:'Product name',path:'/shop/',price:'',img:'',blurb:'Short description.'},
-    {name:'Product name',path:'/shop/',price:'',img:'',blurb:'Short description.'},
-    {name:'Product name',path:'/shop/',price:'',img:'',blurb:'Short description.'},
-    {name:'Product name',path:'/shop/',price:'',img:'',blurb:'Short description.'}
-  ];
-  function esc(text){return String(text).replace(/[&<>"]/g,function(char){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]})}
-  function href(path){return esc(KJC.store+path+KJC.aff)}
-  function shot(product){return '<a class="shot" href="'+href(product.path)+'" target="_blank" rel="sponsored noopener noreferrer" aria-label="'+esc(product.name)+' on King Jesus Clothing" tabindex="-1">'+(product.img?'<img src="'+esc(product.img)+'" alt="'+esc(product.name)+'" loading="lazy">':'')+'</a>'}
-  function btn(product,label){return '<a class="btn k" href="'+href(product.path)+'" target="_blank" rel="sponsored noopener noreferrer">'+label+'</a>'}
-
-  var heroProduct=document.getElementById('hero-product');
-  var products=document.getElementById('prods');
-  var shopAll=document.getElementById('shopall');
-  if(heroProduct&&products&&shopAll){
-    heroProduct.className='heroprod rv pop';
-    heroProduct.innerHTML=shot(featured)+'<div class="info"><span class="badge">Featured</span><h3>'+esc(featured.name)+'</h3>'+(featured.price?'<div class="price">'+esc(featured.price)+'</div>':'')+'<p>'+esc(featured.blurb)+'</p>'+btn(featured,'Shop now')+'</div>';
-    products.innerHTML=items.map(function(product,index){
-      return '<article class="prod rv" style="--i:'+index+'">'+shot(product)+'<div class="info"><h3>'+esc(product.name)+'</h3>'+(product.price?'<div class="price" style="font-size:1rem">'+esc(product.price)+'</div>':'')+'<p>'+esc(product.blurb)+'</p>'+btn(product,'Shop now')+'</div></article>';
-    }).join('');
-    shopAll.href=KJC.store+(KJC.aff||'');
-  }
-
   var $=function(selector){return document.querySelector(selector)};
   document.querySelectorAll('[data-current-year]').forEach(function(year){
     year.textContent=new Date().getFullYear();
+  });
+  document.querySelectorAll('.services-submenu a[href$="#services"]').forEach(function(link){
+    link.addEventListener('click',function(){
+      var submenu=link.closest('.services-nav');
+      if(submenu)submenu.open=false;
+    });
   });
 
   var head=$('header'),bar=$('#bar'),fab=$('#fab'),hero=$('#hero');
@@ -43,14 +22,20 @@
 
     var burger=$('#burger'),menu=$('#menu');
     if(burger&&menu){
-      function toggle(open){
+      function toggle(open,restoreFocus){
         burger.setAttribute('aria-expanded',open);
         menu.classList.toggle('open',open);
         document.body.style.overflow=open?'hidden':'';
+        if(open){
+          var firstLink=menu.querySelector('a');
+          if(firstLink)firstLink.focus();
+        }else if(restoreFocus){
+          burger.focus();
+        }
       }
       burger.addEventListener('click',function(){toggle(burger.getAttribute('aria-expanded')!=='true')});
-      menu.addEventListener('click',function(event){if(event.target.tagName==='A')toggle(false)});
-      addEventListener('keydown',function(event){if(event.key==='Escape')toggle(false)});
+      menu.addEventListener('click',function(event){if(event.target.closest('a'))toggle(false)});
+      addEventListener('keydown',function(event){if(event.key==='Escape'&&burger.getAttribute('aria-expanded')==='true')toggle(false,true)});
     }
 
     var elements=document.querySelectorAll('.rv');
@@ -79,15 +64,37 @@
     if(img.complete&&img.naturalWidth===0)bad();
   });
 
-  var messageForm=$('#message-form');
-  if(messageForm){
-    messageForm.addEventListener('submit',function(event){
+  var contactForm=$('#contact-form');
+  if(contactForm){
+    var params=new URLSearchParams(window.location.search);
+    var service=params.get('service');
+    var reason=params.get('reason');
+    function selectContactOption(select,value){
+      for(var i=0;i<select.options.length;i++){
+        if(select.options[i].value===value){select.value=value;return}
+      }
+    }
+    if(service)selectContactOption(contactForm.elements.service,service);
+    if(reason)selectContactOption(contactForm.elements.reason,reason);
+    contactForm.addEventListener('submit',function(event){
       event.preventDefault();
-      var message=$('#contact-message');
-      if(!message.value.trim()){message.focus();return}
-      var subject=encodeURIComponent('Message from the Leading Lights website');
-      var body=encodeURIComponent(message.value.trim());
+      var fields=new FormData(contactForm);
+      var serviceLabel=contactForm.elements.service.selectedOptions[0].textContent;
+      var reasonLabel=contactForm.elements.reason.selectedOptions[0].textContent;
+      var subject=encodeURIComponent('Website inquiry: '+reasonLabel);
+      var body=encodeURIComponent([
+        'Name: '+fields.get('name'),
+        'Email: '+fields.get('email'),
+        'Phone: '+(fields.get('phone')||'Not provided'),
+        'Reason for reaching out: '+reasonLabel,
+        'Service or program: '+serviceLabel,
+        '',
+        'Message:',
+        fields.get('message')
+      ].join('\n'));
       window.location.href='mailto:info@leadinglights901.com?subject='+subject+'&body='+body;
     });
   }
+  document.documentElement.classList.remove('no-js');
+  document.documentElement.classList.add('js-ready');
 })();

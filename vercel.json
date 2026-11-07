@@ -5,13 +5,48 @@
   "redirects": [
     {
       "source": "/blank",
-      "destination": "/us-in-action",
+      "destination": "/about-us",
+      "permanent": true
+    },
+    {
+      "source": "/us-in-action",
+      "destination": "/about-us",
       "permanent": true
     },
     {
       "source": "/donate",
       "destination": "/support",
       "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/about-us",
+      "destination": "/html/about-us.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/html/contact.html"
+    },
+    {
+      "source": "/support",
+      "destination": "/html/support.html"
+    },
+    {
+      "source": "/mobile-mechanics",
+      "destination": "/html/mobile-mechanics.html"
+    },
+    {
+      "source": "/upholstery-music",
+      "destination": "/html/upholstery-music.html"
+    },
+    {
+      "source": "/communication-skills",
+      "destination": "/html/communication-skills.html"
+    },
+    {
+      "source": "/mentorship",
+      "destination": "/html/mentorship.html"
     }
   ],
   "headers": [
